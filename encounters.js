@@ -1,6 +1,6 @@
 const encounters = [
     {
-        id: 1, 
+        encounterId: 1,
         title: "Cybernetic Guard",
         text: "You encounter a cybernetic guard blocking your path. How do you proceed?",
         choices: [
@@ -14,6 +14,7 @@ const encounters = [
                 },
                 failure: {
                     text: "Your hacking attempt fails, and the guard attacks!",
+                    npcid: 1,
                     effect: "enterCombat",
                 },
             },
@@ -27,6 +28,7 @@ const encounters = [
                 },
                 failure: {
                     text: "You're spotted! The guard attacks.",
+                    npcid:1,
                     effect: "enterCombat",
                 },
             },
@@ -40,47 +42,49 @@ const encounters = [
                 },
                 failure: {
                     text: "The guard is too strong! It pushes you back and attacks.",
+                    npcid: 1,
                     effect: "enterCombat",
                 },
             },
         ],
+        nextEncounterId: 2,
     },
-    // Additional encounters...
+    {
+        encounterId: 2,
+        title: "Path to Infiltration",
+        text: "After defeating the guard, you arrive in the alley near the building you must infiltrate. Do you take the sewers or climb the building?",
+        choices: [
+            {
+                text: "Go through the sewers.",
+                attribute: "int",
+                difficulty: 10,
+                success: {
+                    text: "You navigate the sewers successfully and enter the building unseen.",
+                    effect: () => console.log("Entered through the sewers."),
+                },
+                failure: {
+                    text: "You get lost in the sewers and end up back where you started.",
+                    effect: () => console.log("Lost in sewers."),
+                },
+            },
+            {
+                text: "Climb the outside of the building.",
+                attribute: "agi",
+                difficulty: 14,
+                success: {
+                    text: "Your climb is successful, and you find an entry point on an upper level.",
+                    effect: () =>
+                        console.log("Entered through the upper level."),
+                },
+                failure: {
+                    text: "You slip and fall, alerting a nearby guard to your presence.",
+                    effect: "enterCombat",
+                },
+            },
+        ],
+        nextEncounterId: 3,
+    },
+    // Further encounters based on the choice made in id 2...
 ];
 
-
-function startEncounter(encounterId, character) {
-    const encounter = encounters.find((e) => e.id === encounterId);
-    if (!encounter) {
-        console.log("Encounter not found.");
-        return;
-    }
-
-    console.log(encounter.text);
-    encounter.choices.forEach((choice, index) => {
-        console.log(`${index + 1}: ${choice.text}`);
-    });
-
-    let answer = parseInt(prompt("Choose an action: "), 10) - 1;
-    const choice = encounter.choices[answer];
-
-    if (!choice) {
-        console.log("Invalid choice.");
-        return;
-    }
-
-    const success = performAttributeCheck(
-        choice.attribute,
-        character,
-        choice.difficulty
-    );
-    if (success) {
-        console.log(choice.success.text);
-        choice.success.effect(); // Execute the success effect
-    } else {
-        console.log(choice.failure.text);
-        choice.failure.effect(); // Execute the failure effect
-    }
-}
-
-module.exports = { encounters, startEncounter };
+module.exports = { encounters };
