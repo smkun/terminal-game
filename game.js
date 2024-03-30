@@ -28,7 +28,6 @@ function selectCharacter() {
             console.log("Invalid selection, please try again.");
         }
     }
-    selectedCharacter.maxHealth = selectedCharacter.health;
     return characters[index];
 }
 
