@@ -1,8 +1,10 @@
+// Import Statements
 const prompt = require('prompt-sync')({sigint: true});
 
-function displayIntro() {
-    console.clear(); // Optional: Clears the console before displaying the intro
-    // Your game's introduction text
+// Display Function
+// Displays the introduction of the game
+const displayIntro = () => {
+    console.clear();
     const introText = `
     Welcome to The Adventure Game!
     --------------------------------
@@ -13,6 +15,6 @@ function displayIntro() {
     
     console.log(introText);
     prompt(); // Waits for the user to press "Enter"
-}
+};
 
 module.exports = { displayIntro };

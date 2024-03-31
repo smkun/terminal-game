@@ -1,3 +1,4 @@
+// Encounter Data
 const encounters = [
     {
         encounterId: 1,
@@ -10,7 +11,7 @@ const encounters = [
                 difficulty: 12,
                 success: {
                     text: "The guard powers down, and you can proceed.",
-                    effect: () => console.log("You bypass the guard."),
+                    immediateEffect: null,
                 },
                 failure: {
                     text: "Your hacking attempt fails, and the guard attacks!",
@@ -24,11 +25,12 @@ const encounters = [
                 difficulty: 15,
                 success: {
                     text: "You successfully sneak past the guard.",
+                    immediateEffect: null, 
                     effect: () => console.log("You bypass the guard silently."),
                 },
                 failure: {
                     text: "You're spotted! The guard attacks.",
-                    npcid:1,
+                    npcid: 1,
                     effect: "enterCombat",
                 },
             },
@@ -38,6 +40,7 @@ const encounters = [
                 difficulty: 18,
                 success: {
                     text: "You overpower the guard and knock it out.",
+                    immediateEffect: null, 
                     effect: () => console.log("Guard is down. Path is clear."),
                 },
                 failure: {
@@ -60,6 +63,7 @@ const encounters = [
                 difficulty: 10,
                 success: {
                     text: "You navigate the sewers successfully and enter the building unseen.",
+                    immediateEffect: null, 
                     effect: () => console.log("Entered through the sewers."),
                 },
                 failure: {
@@ -73,18 +77,22 @@ const encounters = [
                 difficulty: 14,
                 success: {
                     text: "Your climb is successful, and you find an entry point on an upper level.",
-                    effect: () =>
-                        console.log("Entered through the upper level."),
+                    immediateEffect: null, 
+                    effect: () => console.log("Entered through the upper level."),
                 },
                 failure: {
                     text: "You slip and fall, alerting a nearby guard to your presence.",
+                    immediateEffect: (character) => {
+                        console.log("You've hurt yourself in the fall. You take 3 damage.");
+                        character.health -= 3;
+                    },
                     effect: "enterCombat",
                 },
             },
         ],
         nextEncounterId: 3,
     },
-    // Further encounters based on the choice made in id 2...
+    // Further encounters...
 ];
 
 module.exports = { encounters };
