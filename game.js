@@ -244,7 +244,6 @@ const pauseForIntermission = (character) => {
             break;
         case "3":
             // Continue the ongoing encounter
-            console.log(character.currentEncounterId)
             const currentEncounterId = character.currentEncounterId;
             startEncounter(character.currentEncounterId, character);
             break;
@@ -288,7 +287,6 @@ const useItem = (character) => {
 
 // Applies the effect of an item
 const applyItemEffect = (character, item) => {
-    console.log(item.effect, item.name)
     switch(item.effect) {
         case "heal":
             character.health = Math.min(character.health + item.amount, character.maxHealth);
