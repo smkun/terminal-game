@@ -1,3 +1,4 @@
+// Imports and Constants
 const prompt = require("prompt-sync")();
 const { characters } = require("./characters.js");
 const { items, addItemToCharacter } = require("./items.js");
@@ -5,15 +6,13 @@ const { encounters } = require("./encounters.js");
 const { npcs } = require("./npcs.js");
 const { displayIntro } = require("./intro.js");
 
-function selectCharacter() {
+// Utility Functions
+// Clears the console and display character selection
+const selectCharacter = () => {
     console.clear();
     console.log("Select your character:");
     characters.forEach((char, index) => {
-        console.log(
-            `${index + 1}: ${char.name} (Class: ${char.class}, STR ${
-                char.str
-            }, AGI ${char.agi}, INT ${char.int}, Health ${char.health})`
-        );
+        console.log(`${index + 1}: ${char.name} (Class: ${char.class}, STR ${char.str}, AGI ${char.agi}, INT ${char.int}, Health ${char.health})`);
     });
 
     let isValidEntry = false;
@@ -29,38 +28,30 @@ function selectCharacter() {
         }
     }
     return characters[index];
-}
+};
 
-function selectStartingItem(character) {
+// Display starting item selection
+const selectStartingItem = (character) => {
     console.clear();
     console.log("Select a starting item:");
-    items
-        .filter((item) => item.starterItem)
-        .forEach((item, index) => {
-            console.log(
-                `${index + 1}: ${
-                    item.name
-                } (Bonus: ${item.bonusType.toUpperCase()} +${
-                    item.bonusAmount
-                }, Value: ${item.value})`
-            );
-        });
+    items.filter(item => item.starterItem).forEach((item, index) => {
+        console.log(`${index + 1}: ${item.name} (Bonus: ${item.bonusType.toUpperCase()} +${item.bonusAmount}, Value: ${item.value})`);
+    });
 
     let index = parseInt(prompt("Enter the number of your item: "), 10) - 1;
-    const filteredItems = items.filter((item) => item.starterItem);
+    const filteredItems = items.filter(item => item.starterItem);
     if (index < 0 || index >= filteredItems.length) {
         console.log("Invalid selection, please try again.");
         return selectStartingItem(character);
     }
     character.inventory.push(filteredItems[index].id);
-}
+};
 
-function performAttributeCheck(attribute, character, difficulty) {
+// Performs an attribute check
+const performAttributeCheck = (attribute, character, difficulty) => {
     const itemBonus = character.inventory.reduce((total, itemId) => {
-        const item = items.find((item) => item.id === itemId);
-        return item && item.bonusType === attribute
-            ? total + item.bonusAmount
-            : total;
+        const item = items.find(item => item.id === itemId);
+        return item && item.bonusType === attribute ? total + item.bonusAmount : total;
     }, 0);
 
     const roll = Math.floor(Math.random() * 15) + 1;
@@ -68,9 +59,7 @@ function performAttributeCheck(attribute, character, difficulty) {
     const total = roll + totalAttribute;
     const success = total >= difficulty;
 
-    console.log(
-        `You rolled a ${roll} + ${totalAttribute} (${attribute.toUpperCase()} including item bonuses) = ${total}`
-    );
+    console.log(`You rolled a ${roll} + ${totalAttribute} (${attribute.toUpperCase()} including item bonuses) = ${total}`);
 
     if (success) {
         console.log("\x1b[32m%s\x1b[0m", "PASS");
@@ -79,11 +68,12 @@ function performAttributeCheck(attribute, character, difficulty) {
     }
 
     return success;
-}
+};
 
-function startEncounter(encounterId, character) {
+// Initiates an encounter based on the encounterId
+const startEncounter = (encounterId, character) => {
     console.clear();
-    const encounter = encounters.find((e) => e.encounterId === encounterId);
+    const encounter = encounters.find(e => e.encounterId === encounterId);
     if (!encounter) {
         console.log("Encounter not found.");
         return;
@@ -102,86 +92,69 @@ function startEncounter(encounterId, character) {
 
         if (!choice) {
             console.log("Invalid choice. Please try again.");
-            continue; // Loop until a valid choice is made
+            continue;
         }
-        break; // Exit loop on valid choice
+        break;
     }
 
-    const success = performAttributeCheck(
-        choice.attribute,
-        character,
-        choice.difficulty
-    );
+    const success = performAttributeCheck(choice.attribute, character, choice.difficulty);
     if (success) {
         console.log(choice.success.text);
         if (typeof choice.success.effect === "function") {
             choice.success.effect();
         }
         pauseForIntermission(character);
-        // Transition to the next encounter if available
         if (encounter.nextEncounterId) {
             startEncounter(encounter.nextEncounterId, character);
         }
     } else {
         console.log(choice.failure.text);
-        // Trigger combat or execute failure effect
         if (choice.failure.effect === "enterCombat" && choice.failure.npcid) {
             enterCombat(character, choice.failure.npcid, encounterId);
         } else if (typeof choice.failure.effect === "function") {
             choice.failure.effect();
         }
     }
-}
+};
 
-function calculateDamage(source, target) {
-    const weapon = source.inventory
-        .map((itemId) => items.find((item) => item.id === itemId))
-        .find(
-            (item) =>
-                item &&
-                (item.type === "melee" ||
-                    item.type === "ranged" ||
-                    item.type === "hacking")
-        );
-    let attackType = weapon ? weapon.type : "melee"; // Default to melee if no weapon
-    let baseStat = source.str; // Default stat to use for damage calculation
+// Calculates damage
+const calculateDamage = (source, target) => {
+    const weapon = source.inventory.map(itemId => items.find(item => item.id === itemId)).find(item => item && (item.type === "melee" || item.type === "ranged" || item.type === "hacking"));
+    let attackType = weapon ? weapon.type : "melee";
+    let baseStat = source.str;
     if (attackType === "ranged") {
         baseStat = source.agi;
     } else if (attackType === "hacking") {
         baseStat = source.int;
     }
 
-    // Calculate the base damage. For characters, include a random value within their damage range.
     let baseDamage = baseStat;
     if ("damage" in source) {
-        baseDamage += Math.floor(Math.random() * source.damage) + 1; // Only for characters
+        baseDamage += Math.floor(Math.random() * source.damage) + 1;
     }
 
-    // Include weapon damage if applicable
     if (weapon) {
         baseDamage += weapon.damage;
     }
 
-    // Calculate total armor value of the target
     const totalArmor = target.inventory.reduce((total, itemId) => {
-        const item = items.find(
-            (item) => item.id === itemId && item.type === "armor"
-        );
+        const item = items.find(item => item.id === itemId && item.type === "armor");
         return total + (item ? item.bonusAmount : 0);
-    }, target.armor || 0); // Ensure there's a fallback for target.armor
+    }, target.armor || 0);
 
-    // Calculate the final damage
     const finalDamage = Math.max(0, baseDamage - totalArmor);
     return finalDamage;
-}
+};
 
-function enterCombat(player, npcId, currentEncounterId) {
+// Initiates combat 
+const enterCombat = (player, npcId, currentEncounterId) => {
     console.log("You enter combat.");
     resolveCombat(player, npcId, currentEncounterId);
-}
+};
 
-function resolveCombat(player, npcId, currentEncounterId) {
-    const npc = npcs.find((n) => n.id === npcId);
+// Resolves the combat sequence
+const resolveCombat = (player, npcId, currentEncounterId) => {
+    const npc = npcs.find(n => n.id === npcId);
     if (!npc) {
         console.log("NPC not found, cannot initiate combat.");
         return;
@@ -193,22 +166,17 @@ function resolveCombat(player, npcId, currentEncounterId) {
         console.log(`Entering combat with ${npc.name}...`);
         const playerDamage = calculateDamage(player, npc);
         npc.health -= playerDamage;
-        console.log(
-            `${npc.name} takes ${playerDamage} damage, remaining health: ${npc.health}.`
-        );
+        console.log(`${npc.name} takes ${playerDamage} damage, remaining health: ${npc.health}.`);
 
         if (npc.health <= 0) {
             console.log(`${npc.name} defeated!`);
             handleLoot(player, npc, currentEncounterId);
-            break; // Exiting the loop after handling loot
+            break;
         }
 
-        // NPC's turn to attack
         const npcDamage = calculateDamage(npc, player);
         player.health -= npcDamage;
-        console.log(
-            `${player.name} takes ${npcDamage} damage, remaining health: ${player.health}.`
-        );
+        console.log(`${player.name} takes ${npcDamage} damage, remaining health: ${player.health}.`);
 
         if (player.health <= 0) {
             console.log(`${player.name} has been defeated. Game Over.`);
@@ -216,24 +184,22 @@ function resolveCombat(player, npcId, currentEncounterId) {
             continue;
         }
 
-        // After each round, ask the player if they want to continue or flee
-        const action = prompt(
-            "Do you wish to 'continue' fighting or 'flee'? "
-        ).toLowerCase();
+        const action = prompt("Do you wish to 'continue' fighting or 'flee'? ").toLowerCase();
         if (action === "flee") {
             console.log("You decided to flee. Returning to the encounter...");
             combatActive = false;
             startEncounter(npcId, player);
         }
     }
-}
+};
 
-function handleLoot(player, npc, currentEncounterId) {
+// Handle looting after combat
+const handleLoot = (player, npc, currentEncounterId) => {
     console.log(`Defeated ${npc.name}. Looting...`);
     player.money += npc.money;
 
     npc.inventory.forEach((itemId) => {
-        const newItem = items.find((item) => item.id === itemId);
+        const newItem = items.find(item => item.id === itemId);
         if (!newItem) {
             console.log("Item not found.");
             return;
@@ -244,28 +210,16 @@ function handleLoot(player, npc, currentEncounterId) {
         addItemToCharacter(player, newItem.id);
     });
     pauseForIntermission(player);
-    const currentEncounter = encounters.find(
-        (enc) => enc.encounterId === currentEncounterId
-    );
+    const currentEncounter = encounters.find(enc => enc.encounterId === currentEncounterId);
     if (currentEncounter && currentEncounter.nextEncounterId) {
         startEncounter(currentEncounter.nextEncounterId, player);
     } else {
         console.log("No more encounters or next encounter not found.");
     }
-}
+};
 
-function startGame() {
-    displayIntro();
-    const selectedCharacter = selectCharacter();
-    console.log(
-        `You have selected ${selectedCharacter.name}, the ${selectedCharacter.class}.`
-    );
-
-    selectStartingItem(selectedCharacter);
-    startEncounter(1, selectedCharacter);
-}
-
-function pauseForIntermission(character) {
+// Provides an intermission for the player to view status or use items
+const pauseForIntermission = (character) => {
     console.log("\nIntermission:");
     console.log("1. View character status");
     console.log("2. Use an item");
@@ -275,38 +229,28 @@ function pauseForIntermission(character) {
     switch (choice) {
         case "1":
             console.clear();
-            console.log(
-                `Character Status:\nName: ${character.name}\nHealth: ${
-                    character.health
-                }\nSTR: ${character.str}, AGI: ${character.agi}, INT: ${
-                    character.int
-                }\nMoney: ${character.money}\nInventory: ${
-                    character.inventory
-                        .map((id) => items.find((item) => item.id === id).name)
-                        .join(", ") || "No items"
-                }`
-            );
-            pauseForIntermission(character); // Recursively call to allow another choice
+            console.log(`Character Status:\nName: ${character.name}\nHealth: ${character.health}\nSTR: ${character.str}, AGI: ${character.agi}, INT: ${character.int}\nMoney: ${character.money}\nInventory: ${character.inventory.map(id => items.find(item => item.id === id).name).join(", ") || "No items"}`);
+            pauseForIntermission(character);
             break;
         case "2":
             if (character.inventory.length === 0) {
                 console.log("No items to use.");
-                pauseForIntermission(character); // Recursively call to allow another choice
+                pauseForIntermission(character);
             } else {
                 useItem(character);
             }
             break;
         case "3":
             console.log("Continuing...");
-            break; // Exit the intermission
+            break;
         default:
             console.log("Invalid option. Please try again.");
-            pauseForIntermission(character); // Call for valid input
+            pauseForIntermission(character);
     }
-}
+};
 
-function useItem(character) {
-    // Filter consumable items from the character's inventory
+// Allows a character to use an item from their inventory
+const useItem = (character) => {
     const consumables = character.inventory.map(id => items.find(item => item.id === id)).filter(item => item.type === "consumable");
 
     if (consumables.length === 0) {
@@ -336,16 +280,26 @@ function useItem(character) {
     }
 
     pauseForIntermission(character);
-}
+};
 
-function applyItemEffect(character, item) {
+// Applies the effect of an item
+const applyItemEffect = (character, item) => {
     switch(item.effect) {
         case "heal":
             character.health = Math.min(character.health + item.amount, character.maxHealth);
             console.log(`Healed for ${item.amount} health. Current health: ${character.health}.`);
             break;
-        // Add cases for other effects as needed
     }
-}
+};
+
+// Game Start Function
+const startGame = () => {
+    displayIntro();
+    const selectedCharacter = selectCharacter();
+    console.log(`You have selected ${selectedCharacter.name}, the ${selectedCharacter.class}.`);
+
+    selectStartingItem(selectedCharacter);
+    startEncounter(1, selectedCharacter);
+};
 
 startGame();
