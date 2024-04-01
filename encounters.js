@@ -82,6 +82,7 @@ const encounters = [
                 },
                 failure: {
                     text: "You slip and fall, alerting a nearby guard to your presence.",
+                    npcId: 2,
                     immediateEffect: (character) => {
                         console.log("You've hurt yourself in the fall. You take 3 damage.");
                         character.health -= 3;

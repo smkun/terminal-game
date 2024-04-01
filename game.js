@@ -5,6 +5,8 @@ const { items, addItemToCharacter } = require("./items.js");
 const { encounters } = require("./encounters.js");
 const { npcs } = require("./npcs.js");
 const { displayIntro } = require("./intro.js");
+let nextEncounterId = [];
+let npcId = [];
 
 // Utility Functions
 // Clears the console and display character selection
@@ -72,7 +74,8 @@ const performAttributeCheck = (attribute, character, difficulty, choice) => {
             choice.failure.immediateEffect(character); // Execute failure immediate effect
         }
         if (choice.failure.effect === "enterCombat") {
-            enterCombat(character);
+            let npcId = choice.failure.npcid;
+            enterCombat(character, npcId);
         }
     }
 
@@ -89,7 +92,7 @@ const startEncounter = (encounterId, character) => {
     }
 
     console.log(encounter.text);
-
+    nextEncounterId = encounter.nextEncounterId;
     let choice;
     while (true) {
         encounter.choices.forEach((choice, index) => {
@@ -105,8 +108,7 @@ const startEncounter = (encounterId, character) => {
         }
         break;
     }
-
-    const success = performAttributeCheck(choice.attribute, character, choice.difficulty, choice);
+    const success = performAttributeCheck(choice.attribute, character, choice.difficulty, choice, npcId);
     if (success) {
         if (typeof choice.success.effect === "function") {
             choice.success.effect();
@@ -117,8 +119,11 @@ const startEncounter = (encounterId, character) => {
         }
     } else {
         console.log(choice.failure.text);
+        // console.log(choice.failure);
         if (choice.failure.effect === "enterCombat" && choice.failure.npcid) {
-            enterCombat(character, choice.failure.npcid);
+            let npcId = choice.failure.npcid;
+            enterCombat(character, npcId);
+            return npcId;
         } else if (typeof choice.failure.effect === "function") {
             choice.failure.effect();
         }
@@ -185,7 +190,7 @@ const resolveCombat = (character, npcId) => {
         const npcDamage = calculateDamage(npc, character);
         character.health -= npcDamage;
         console.log(`${character.name} takes ${npcDamage} damage, remaining health: ${character.health}.`);
-
+        console.clear();
         if (character.health <= 0) {
             console.log(`${character.name} has been defeated. Game Over.`);
             combatActive = false;
@@ -244,8 +249,8 @@ const pauseForIntermission = (character) => {
             break;
         case "3":
             // Continue the ongoing encounter
-            const currentEncounterId = character.currentEncounterId;
-            startEncounter(character.currentEncounterId, character);
+            startEncounter(nextEncounterId, character);
+            // console.log(nextEncounterId); //debugger for nextEncounterId
             break;
         default:
             console.log("Invalid option. Please try again.");
