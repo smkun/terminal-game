@@ -41,7 +41,7 @@ const selectStartingItem = (character) => {
     });
 
     let index = parseInt(prompt("Enter the number of your item: "), 10) - 1;
-    const filteredItems = items.filter(item => item.starterItem);
+    const filteredItems = items.filter(item => item.starterItem);2
     if (index < 0 || index >= filteredItems.length) {
         console.log("Invalid selection, please try again.");
         return selectStartingItem(character);
@@ -92,7 +92,6 @@ const startEncounter = (encounterId, character) => {
     }
 
     console.log(encounter.text);
-    nextEncounterId = encounter.nextEncounterId;
     let choice;
     while (true) {
         encounter.choices.forEach((choice, index) => {
@@ -161,6 +160,7 @@ const calculateDamage = (source, target) => {
 
 // Initiates combat 
 const enterCombat = (character, npcId) => {
+    console.log("START COMBAT", npcId)
     console.log("You enter combat.");
     resolveCombat(character, npcId);
 };
@@ -190,9 +190,10 @@ const resolveCombat = (character, npcId) => {
         const npcDamage = calculateDamage(npc, character);
         character.health -= npcDamage;
         console.log(`${character.name} takes ${npcDamage} damage, remaining health: ${character.health}.`);
-        console.clear();
+        // console.clear();
         if (character.health <= 0) {
             console.log(`${character.name} has been defeated. Game Over.`);
+            npcId = [];
             combatActive = false;
             continue;
         }
@@ -250,7 +251,7 @@ const pauseForIntermission = (character) => {
         case "3":
             // Continue the ongoing encounter
             startEncounter(nextEncounterId, character);
-            // console.log(nextEncounterId); //debugger for nextEncounterId
+            console.log("DEBUG",nextEncounterId); //debugger for nextEncounterId
             break;
         default:
             console.log("Invalid option. Please try again.");
