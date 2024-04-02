@@ -1,12 +1,12 @@
-// Imports and Constants
+// Imports anConstantsd Constants
 const prompt = require("prompt-sync")();
 const { characters } = require("./characters.js");
 const { items, addItemToCharacter } = require("./items.js");
 const { encounters } = require("./encounters.js");
 const { npcs } = require("./npcs.js");
-const { displayIntro } = require("./intro.js");
-let nextEncounterId = [];
-let npcId = [];
+const { displayIntro } = require("./Data/intro.js");
+let nextEncounterId = null;
+let npcId = null;
 
 // Utility Functions
 // Clears the console and display character selection
@@ -87,6 +87,7 @@ const startEncounter = (encounterId, character) => {
     console.clear();
     const encounter = encounters.find(e => e.encounterId === encounterId);
     if (!encounter) {
+        console.log("DEBUG90", encounterId);
         console.log("Encounter not found.");
         return;
     }
@@ -107,20 +108,22 @@ const startEncounter = (encounterId, character) => {
         }
         break;
     }
-    const success = performAttributeCheck(choice.attribute, character, choice.difficulty, choice, npcId);
+    const success = performAttributeCheck(choice.attribute, character, choice.difficulty, choice);
     if (success) {
         if (typeof choice.success.effect === "function") {
             choice.success.effect();
         }
         pauseForIntermission(character);
+        console.log("DEBUG116",encounter.nextEncounterId)
         if (encounter.nextEncounterId) {
-            startEncounter(encounter.nextEncounterId, character);
+            nextEncounterId = encounter.nextEncounterId; //update next encounter id
+            startEncounter(nextEncounterId, character);
         }
     } else {
         console.log(choice.failure.text);
         // console.log(choice.failure);
         if (choice.failure.effect === "enterCombat" && choice.failure.npcid) {
-            let npcId = choice.failure.npcid;
+            npcId = choice.failure.npcid;
             enterCombat(character, npcId);
             return npcId;
         } else if (typeof choice.failure.effect === "function") {
@@ -160,7 +163,6 @@ const calculateDamage = (source, target) => {
 
 // Initiates combat 
 const enterCombat = (character, npcId) => {
-    console.log("START COMBAT", npcId)
     console.log("You enter combat.");
     resolveCombat(character, npcId);
 };
@@ -193,7 +195,7 @@ const resolveCombat = (character, npcId) => {
         // console.clear();
         if (character.health <= 0) {
             console.log(`${character.name} has been defeated. Game Over.`);
-            npcId = [];
+            npcId = [null];
             combatActive = false;
             continue;
         }
@@ -201,9 +203,11 @@ const resolveCombat = (character, npcId) => {
         const action = prompt("Do you wish to 'continue' fighting or 'flee'? ").toLowerCase();
         if (action === "flee") {
             console.log("You decided to flee. Returning to the encounter...");
-            combatActive = false;
-            startEncounter(npcId, character);
-        }
+            combatActive = false;    
+        }  
+    }
+    if (nextEncounterId) {
+        startEncounter(nextEncounterId, character);
     }
 };
 
@@ -249,9 +253,14 @@ const pauseForIntermission = (character) => {
             }
             break;
         case "3":
+            console.log("DEBUG253", nextEncounterId)
             // Continue the ongoing encounter
-            startEncounter(nextEncounterId, character);
-            console.log("DEBUG",nextEncounterId); //debugger for nextEncounterId
+            if (nextEncounterId){
+                startEncounter(nextEncounterId, character);
+            } else {
+                console.log("No next encounter. ");
+            }
+            console.log("DEBUG256",nextEncounterId);
             break;
         default:
             console.log("Invalid option. Please try again.");
@@ -313,7 +322,7 @@ const applyItemEffect = (character, item) => {
 const startGame = () => {
     displayIntro();
     const selectedCharacter = selectCharacter();
-    console.log(`You have selected ${selectedCharacter.name}, the ${selectedCharacter.class}.`);
+    console.log(`You have selected ${selectedCharacter.getName()}, the ${selectedCharacter.getClass()}.`);
 
     selectStartingItem(selectedCharacter);
     startEncounter(1, selectedCharacter);

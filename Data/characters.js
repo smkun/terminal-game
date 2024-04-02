@@ -1,3 +1,4 @@
+// #file
 // Character Data
 const characters = [
     { class: "NetRunner", name: "Nyble", str: 3, agi: 5, int: 8, health: 80, maxHealth: 80, armor: 0, damage: 6, inventory: [20], money: 50 },

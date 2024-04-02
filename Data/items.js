@@ -1,3 +1,4 @@
+// #file
 // Items Data
 const items = [
     { id: 1, name: "Hacking Device", bonusType: "int", bonusAmount: 2, value: 100, starterItem: true, replaces: [] },
