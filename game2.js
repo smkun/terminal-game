@@ -1,6 +1,6 @@
 // #file
 // Imports and Constants
-const prompt = require("prompt-sync")();
+const { prompt } = require("./Utils/PromptSingleton.js");
 const charactersData = require("./Data/characters.js").characters;
 const itemsData = require("./Data/items.js").items;
 const encountersData = require("./Data/encounters.js").encounters;
@@ -64,13 +64,14 @@ const selectStartingItem = (character) => {
 
 // Initiates an encounter based on the encounterId
 const startEncounter = (encounterId, character) => {
+    // console.log("DEBUG67", character)
     console.clear();
     const encounter = encounters.find(e => e.getEncounterId() === encounterId);
     if (!encounter) {
         console.log("Encounter with id ${encounterId} not found.");
         return;
     }
-
+    // console.log("DEBUG73 game2.js", encounter);
     console.log(encounter.getText());
     let choice;
     while (true) {
@@ -80,14 +81,21 @@ const startEncounter = (encounterId, character) => {
 
         let answer = parseInt(prompt("Choose an action: "), 10) - 1;
         choice = encounter.getChoice(answer);
-
+        // console.log("????");
+        // console.log("DEBUG84", choice);
+        // console.log("!!!!!");
         if (!choice) {
             console.log("Invalid choice. Please try again.");
             continue;
         }
         break;
     }
-    const success = character.performAttributeCheck(choice.getAttribute(), choice.getDifficulty(), choice, items, npcs, startEncounter, prompt);
+    // console.log("DEBUG93 game.js", encounter)
+    const success = character.performAttributeCheck(choice.getAttribute(), choice.getDifficulty(), choice, items, npcs, startEncounter, prompt, encounter);
+    
+    // console.log("????");
+    // console.log("DEBUG92", success);
+    // console.log("!!!!!");
     let nextEncounterId = encounter.getNextEncounterId();
     if (success) {
         encounter.executeImmediateEffect(choice, character);
@@ -97,19 +105,21 @@ const startEncounter = (encounterId, character) => {
         if (nextEncounterId) {
         }
     } else {
-    if (choice.failure) {
-        console.log(choice.failure.text);
-        if (choice.failure && choice.failure.effect === "enterCombat" && choice.failure.npcId) {
-            const nextEncounter = encounters.find(e => e.getEncounterId() === nextEncounterId);
-            nextEncounterId = enterCombat(character, choice.failure.npcId, nextEncounterId, encounter);
-        } else if (typeof choice.failure.effect === "function") {
-            choice.failure.effect();
+        if (choice.failure) {
+            console.log(choice.failure.text);
+            // console.log("DEBUG101 game2.js", encounter);
+            if (choice.failure && choice.failure.effect === "enterCombat" && choice.failure.npcId) {
+                const nextEncounter = encounters.find(e => e.getEncounterId() === nextEncounterId);
+                nextEncounterId = enterCombat(character, choice.failure.npcId, nextEncounterId, encounter);
+            } else if (typeof choice.failure.effect === "function") {
+                choice.failure.effect();
+            }
         }
-    }
     };
 }
 
 const enterCombat = (character, npcId, nextEncounterId, encounter) => {
+    // console.log("DEBUG114 game2.js", encounter);
     const npc = npcs.find(n => n.id === npcId);
     const combat = new Combat(character, npc);
     combat.enterCombat(character, npc, startEncounter, character.useItem.bind(character, items), prompt, nextEncounterId, encounter);

@@ -1,7 +1,7 @@
 // #file
 //
 // Classes/Combat.js
-const prompt = require('prompt-sync')();
+const { prompt } = require('../Utils/PromptSingleton.js');
 const npcs = require("../Data/npcs.js").npcs;
 const items = require("../Data/items.js").items;
 
@@ -13,19 +13,22 @@ class Combat {
         this.npc = npc;
     }
     static enterCombat(character, npcId, npcs, startEncounter, useItem, prompt, nextEncounterId, encounter) {
+        // console.log("DEBUG16 Combat.js", encounter);
         const npc = npcs.find(n => n.id === npcId);
         const combat = new Combat(character, npc);
         combat.enterCombat(character, npc, startEncounter, useItem, prompt, nextEncounterId, encounter);
     }
 
-    enterCombat(character, npc, startEncounter, useItem, prompt, nextEncounterId, encounter) {
+    enterCombat(character, npc, startEncounter, useItem, prompt, nextEncounterId, encounter,) {
+        // console.log("DEBUG22 Combat.js", encounter);
         this.character = character;
         this.npc = npc;
         console.log("You enter combat.");
-        this.resolveCombat(startEncounter, useItem, prompt, nextEncounterId, encounter);
+        this.resolveCombat(character, startEncounter, useItem, prompt, nextEncounterId, encounter);
     }
 
-    resolveCombat(startEncounter, useItem, prompt, nextEncounterId, encounter) {
+    resolveCombat(character, startEncounter, useItem, prompt, nextEncounterId, encounter) {
+        // console.log("DEBUG31 Combat.js", character);
         if (!this.npc) {
             console.log("NPC not found, cannot initiate combat.");
             return;
@@ -57,10 +60,12 @@ class Combat {
             }
 
             const action = prompt("Do you wish to 'continue' fighting or 'flee'? ").toLowerCase();
+            
             if (action === "flee") {
+                // console.log("DEBUG65 Combat.js", character);
                 console.log("You decided to flee. Returning to the encounter...");
                 combatActive = false;
-                startEncounter(encounter.getEncounterId());
+                startEncounter(encounter.getEncounterId(), character, prompt);
                 return
             }  
         }

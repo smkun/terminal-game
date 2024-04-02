@@ -1,5 +1,5 @@
 // #file
-const prompt = require("prompt-sync")();
+const { prompt } = require('../Utils/PromptSingleton.js');
 const Combat = require("./Combat.js");
 
 class Character {
@@ -70,7 +70,7 @@ class Character {
     getMoney() {
         return this.money;
     }
-    performAttributeCheck(attribute, difficulty, choice, items, npcs, startEncounter, prompt) {
+    performAttributeCheck(attribute, difficulty, choice, items, npcs, startEncounter, prompt, encounter) {
         const itemBonus = this.inventory.reduce((total, itemId) => {
             const item = items.find(item => item.id === itemId);
             return item && item.bonusType === attribute ? total + item.bonusAmount : total;
@@ -97,19 +97,21 @@ class Character {
             if (choice.failure.effect === "enterCombat") {
                 let npcId = choice.failure.npcid;
                 let nextEncounterId = choice.nextEncounterId;
-                Combat.enterCombat(this, npcId, npcs, startEncounter, this.useItem.bind(this), prompt, nextEncounterId);
+                Combat.enterCombat(this, npcId, npcs, startEncounter, this.useItem.bind(this), prompt, nextEncounterId, encounter);
             }
         }
     }
         return success;
     }
     pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter) {
+        console.log("DEBUG107 Character.js PROMPT" ,typeof prompt)
         console.log("\nIntermission:");
         console.log("1. View character status");
         console.log("2. Use an item");
         console.log("3. Continue");
-
+        // console.log("DEBUG112 Characters.js", typeof prompt);
         let choice = prompt("Choose an option: ");
+        console.log("DEBUG114 Character.js ENCOUNTER", typeof encounter);
         switch (choice) {
             case "1":
                 console.clear();
@@ -121,53 +123,56 @@ class Character {
                     console.log("No items to use.");
                     this.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
                 } else {
-                    useItem(items, this.applyItemEffect.bind(this), this.pauseForIntermission.bind(this), prompt);
+                    useItem(items, this.applyItemEffect.bind(this), this.pauseForIntermission.bind(this), prompt, encounter);
                 }
                 break;
+           
             case "3":
-                nextEncounterId = encounter.getNextEncounterId();
-                if (nextEncounterId){
-                    startEncounter(nextEncounterId, this);
-                } else {
-                    console.log("No next encounter.The game will now exit");
-                    process.exit(0);
-                }
-                break;
+            // console.log("DEBUG129 Combat.js", encounter);
+            nextEncounterId = encounter.getNextEncounterId();
+            if (nextEncounterId){
+                startEncounter(nextEncounterId, this);
+            } else {
+                console.log("No next encounter.The game will now exit");
+                process.exit(0);
+            }
+            break;
             default:
                 console.log("Invalid option. Please try again.");
-                this.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt);
-        }
+                this.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
+            console.log("DEBUG142 Character.js", encounter);
+            }
     }
-
-    useItem(items, applyItemEffect, pauseForIntermission, prompt) {
+        
+    useItem(items, applyItemEffect, pauseForIntermission, prompt, encounter) {
         const consumables = this.inventory.map(id => items.find(item => item.id === id)).filter(item => item.type === "consumable");
-
+    
         if (consumables.length === 0) {
             console.log("You have no consumable items to use.");
-            pauseForIntermission(items, null, null, this.useItem.bind(this), prompt);
+            pauseForIntermission(items, startEncounter, useItem, prompt, encounter);
             return;
         }
-
+        console.log("DEBUG155 Character.js PROMPT", typeof prompt)
         console.log("Select an item to use:");
         consumables.forEach((item, index) => {
             console.log(`${index + 1}. ${item.name} (${item.effect}, ${item.amount})`);
         });
         console.log(`${consumables.length + 1}. Go back`);
-
+    
         let choice = parseInt(prompt("Choose an option: "), 10);
         if (choice === consumables.length + 1) {
-            pauseForIntermission(items, null, null, this.useItem.bind(this), prompt);
+            pauseForIntermission(items, startEncounter, useItem, prompt, encounter);
             return;
         }
-
+        console.log("DEBUG167 Character.js ENCOUNTER", typeof encounter);
         const selectedItem = consumables[choice - 1];
         if (selectedItem) {
             this.applyItemEffect(this, selectedItem);
         } else {
             console.log("Invalid choice. Please try again.");
         }
-
-        pauseForIntermission(items, null, null, this.useItem.bind(this), prompt);
+        console.log("DEBUG174 Character.js ENCOUNTER", typeof encounter)
+        pauseForIntermission(items, null, null, this.useItem.bind(this), encounter, prompt);
     }
 
     handleLoot(npc, items) {
@@ -187,6 +192,7 @@ class Character {
     }
 
     applyItemEffect(character, item) {
+        console.log("DEBUG193 Character.js" , typeof item);
         switch(item.effect) {
             case "heal":
                 character.health = Math.min(character.health + item.amount, character.maxHealth);

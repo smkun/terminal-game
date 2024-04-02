@@ -1,6 +1,7 @@
 // #file
 // Import Statements
-const prompt = require('prompt-sync')({sigint: true});
+const { prompt } = require('../Utils/PromptSingleton.js');
+
 
 // Display Function
 // Displays the introduction of the game
