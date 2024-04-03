@@ -1,27 +1,24 @@
 // #filefile
-//
-// Classes/Combat.js
 const { prompt } = require('../Utils/PromptSingleton.js');
 const npcs = require("../Data/npcs.js").npcs;
 const items = require("../Data/items.js").items;
 
-// ...
-
 class Combat {
     constructor(character, npc) {
+        // Initialize combat with a character and an NPC
         this.character = character;
         this.npc = npc;
     }
+
     static enterCombat(character, npcId, npcs, startEncounter, useItem, prompt, nextEncounterId, encounter) {
-        console.log("DEBUG16 COMBAT Type of prompt before calling pauseForIntermission:", typeof nextEncounterId);
+        // Finds the NPC by ID and starts combat
         const npc = npcs.find(n => n.id === npcId);
         const combat = new Combat(character, npc);
         combat.enterCombat(character, npc, startEncounter, useItem, prompt, nextEncounterId, encounter);
     }
 
-    enterCombat(character, npc, startEncounter, useItem, prompt, nextEncounterId, encounter,) {
-        console.log("DEBUG23 COMBAT Type of prompt before calling pauseForIntermission:", typeof nextEncounterId);
-        // console.log("DEBUG22 Combat.js", encounter);
+    enterCombat(character, npc, startEncounter, useItem, prompt, nextEncounterId, encounter) {
+        // Begins the combat sequence
         this.character = character;
         this.npc = npc;
         console.log("You enter combat.");
@@ -29,8 +26,7 @@ class Combat {
     }
 
     resolveCombat(character, startEncounter, useItem, prompt, nextEncounterId, encounter) {
-        console.log("DEBUG31 COMBAT Type of prompt before calling pauseForIntermission:", typeof nextEncounterId);
-        // console.log("DEBUG31 Combat.js", character);
+        // Resolves combat between character and NPC, including loot handling
         if (!this.npc) {
             console.log("NPC not found, cannot initiate combat.");
             return;
@@ -47,7 +43,6 @@ class Combat {
             if (this.npc.health <= 0) {
                 console.log(`${this.npc.name} defeated!`);
                 this.character.handleLoot(this.npc, items);
-                console.log("DEBUG48 Combat.js Type of prompt before calling pauseForIntermission:", typeof nextEncounterId);
                 this.character.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
                 return;
             }
@@ -65,18 +60,16 @@ class Combat {
             const action = prompt("Do you wish to 'continue' fighting or 'flee'? ").toLowerCase();
             
             if (action === "flee") {
-                // console.log("DEBUG65 Combat.js", character);
                 console.log("You decided to flee. Returning to the encounter...");
                 combatActive = false;
                 startEncounter(encounter.getEncounterId(), character, prompt);
-                return
+                return;
             }  
         }
     }
 
     calculateDamage(source, target) {
-        const items = require('../Data/items.js').items; // Make sure to import your items data
-
+        // Calculates damage based on the attacker, weapon, and defender's armor
         const weapon = source.inventory.map(itemId => items.find(item => item.id === itemId)).find(item => item && (item.type === "melee" || item.type === "ranged" || item.type === "hacking"));
         let attackType = weapon ? weapon.type : "melee";
         let baseStat = source.str;
@@ -101,11 +94,11 @@ class Combat {
                 const item = items.find(item => item.id === itemId && item.type === "armor");
                 return total + (item ? item.bonusAmount : 0);
             }, target.armor || 0);
-    }
+        }
 
         const finalDamage = Math.max(0, baseDamage - totalArmor);
         return finalDamage;
     }
-
 };
+
 module.exports = Combat;

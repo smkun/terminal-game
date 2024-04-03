@@ -1,11 +1,12 @@
 // #file
 class Encounter {
     constructor(data) {
-        this.encounterId = data.encounterId;
-        this.title = data.title;
-        this.text = data.text;
-        this.choices = data.choices;
-        this.nextEncounterId = data.nextEncounterId;
+        // Initializes an encounter with provided data
+        this.encounterId = data.encounterId; // Unique identifier for the encounter
+        this.title = data.title; // Title of the encounter
+        this.text = data.text; // Text description of the encounter
+        this.choices = data.choices; // Array of choices available to the player
+        this.nextEncounterId = data.nextEncounterId; // Identifier for the next encounter
     }
 
     // Method to get a choice by index
@@ -13,7 +14,7 @@ class Encounter {
         return this.choices[index];
     }
 
-    // Method to execute the immediate effect of a choice
+    // Method to execute the immediate effect of a choice on a character
     executeImmediateEffect(choice, character) {
         if (choice.immediateEffect) {
             choice.immediateEffect(character);
@@ -29,25 +30,17 @@ class Encounter {
         }
     }
 
-    getEncounterId() {
-        return this.encounterId;
-    }
-
-    getText() {
-        return this.text;
-    }
-
-    getChoices() {
-        return this.choices;
-    }
-
-    getNextEncounterId() {
-        return this.nextEncounterId;
-    }
+    // Getters for encounter properties
+    getEncounterId() { return this.encounterId; }
+    getText() { return this.text; }
+    getChoices() { return this.choices; }
+    getNextEncounterId() { return this.nextEncounterId; }
 }
 
+// Definition of the Choice class
 class Choice {
     constructor(data) {
+        // Initializes a choice with provided data
         this.text = data.text;
         this.attribute = data.attribute;
         this.difficulty = data.difficulty;
@@ -57,25 +50,12 @@ class Choice {
         this.failure = data.failure;
     }
 
-    getText() {
-        return this.text;
-    }
-
-    getImmediateEffect() {
-        return this.immediateEffect;
-    }
-
-    getEffect() {
-        return this.effect;
-    }
-
-    getAttribute() {
-        return this.attribute;
-    }
-
-    getDifficulty() {
-        return this.difficulty;
-    }
+    // Getters for choice properties
+    getText() { return this.text; }
+    getImmediateEffect() { return this.immediateEffect; }
+    getEffect() { return this.effect; }
+    getAttribute() { return this.attribute; }
+    getDifficulty() { return this.difficulty; }
 }
 
 module.exports = {Encounter, Choice}

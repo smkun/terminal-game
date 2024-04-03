@@ -8,11 +8,28 @@ const { prompt } = require('../Utils/PromptSingleton.js');
 const displayIntro = () => {
     console.clear();
     const introText = `
-    Welcome to The Adventure Game!
-    --------------------------------
-    Your journey begins in a world filled with dangers and mysteries.
     
-    Press "Enter" when you are ready to continue...
+
+
+    #                                                                                       
+    #   @@@@@@@@  @@@  @@@   @@@@@@    @@@@@@   @@@@@@@  @@@       @@@  @@@  @@@  @@@@@@@@  
+    #  @@@@@@@@@  @@@  @@@  @@@@@@@@  @@@@@@@   @@@@@@@  @@@       @@@  @@@@ @@@  @@@@@@@@  
+    #  !@@        @@!  @@@  @@!  @@@  !@@         @@!    @@!       @@!  @@!@!@@@  @@!       
+    #  !@!        !@!  @!@  !@!  @!@  !@!         !@!    !@!       !@!  !@!!@!@!  !@!       
+    #  !@! @!@!@  @!@!@!@!  @!@  !@!  !!@@!!      @!!    @!!       !!@  @!@ !!@!  @!!!:!    
+    #  !!! !!@!!  !!!@!!!!  !@!  !!!   !!@!!!     !!!    !!!       !!!  !@!  !!!  !!!!!:    
+    #  :!!   !!:  !!:  !!!  !!:  !!!       !:!    !!:    !!:       !!:  !!:  !!!  !!:       
+    #  :!:   !::  :!:  !:!  :!:  !:!      !:!     :!:     :!:      :!:  :!:  !:!  :!:       
+    #   ::: ::::  ::   :::  ::::: ::  :::: ::      ::     :: ::::   ::   ::   ::   :: ::::  
+    #   :: :: :    :   : :   : :  :   :: : :       :     : :: : :  :    ::    :   : :: ::   
+    #                                                                                       
+                                                                                                                          
+    Ghostline: Codebreakers
+
+    In a neon-lit world, Ghostlines—the shadows—thrive. Their mission: infiltrate General Assembly, steal the Bugkiller Protocol.\n    A cure or chaos? The choice is theirs.                                                                        
+
+    Press Enter to begin your mission...
+
     `;
     
     console.log(introText);

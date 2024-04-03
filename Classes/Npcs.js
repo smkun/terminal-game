@@ -1,22 +1,23 @@
 // #file
 class NPC {
     constructor(data) {
-        this.id = data.id;
-        this.name = data.name;
-        this.str = data.str;
-        this.agi = data.agi;
-        this.int = data.int;
-        this.health = data.health;
-        this.inventory = data.inventory;
-        this.money = data.money;
+        // Initializes an NPC with provided data
+        this.id = data.id; // Unique identifier for the NPC
+        this.name = data.name; // Name of the NPC
+        this.str = data.str; // Strength attribute
+        this.agi = data.agi; // Agility attribute
+        this.int = data.int; // Intelligence attribute
+        this.health = data.health; // Health points of the NPC
+        this.inventory = data.inventory; // Array of item IDs in the NPC's possession
+        this.money = data.money; // Amount of money the NPC has
     }
 
-    // Method to add an item to the NPC's inventory
+    // Adds an item to the NPC's inventory
     addItem(itemId) {
         this.inventory.push(itemId);
     }
 
-    // Method to remove an item from the NPC's inventory
+    // Removes an item from the NPC's inventory
     removeItem(itemId) {
         const index = this.inventory.indexOf(itemId);
         if (index !== -1) {
@@ -24,12 +25,12 @@ class NPC {
         }
     }
 
-    // Method to check if the NPC has an item in their inventory
+    // Checks if the NPC has a specific item in their inventory
     hasItem(itemId) {
         return this.inventory.includes(itemId);
     }
 
-    // Other methods as needed for game mechanics...
+    // Other methods can be added here to extend NPC functionalities as needed for game mechanics...
 }
 
 module.exports = NPC;
