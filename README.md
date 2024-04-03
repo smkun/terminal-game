@@ -38,6 +38,7 @@ To begin your journey in Ghostline, you need to have Node.js installed on your m
 5. Follow the on-screen prompts to make choices and progress through the game.
 
 ## Contributing
+As this was one of my first projects ever, I relied heavily on ChatGPT to help with each of the functions for explanations and help with formatting the various functions correctly.
 
 We welcome contributions to Ghostline! If you have suggestions for improvements, encounter any issues, or would like to contribute new features, please feel free to open an issue or a pull request.
 
