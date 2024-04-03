@@ -70,7 +70,8 @@ class Character {
     getMoney() {
         return this.money;
     }
-    performAttributeCheck(attribute, difficulty, choice, items, npcs, startEncounter, prompt, encounter) {
+    performAttributeCheck(attribute, difficulty, choice, items, npcs, startEncounter, prompt, encounter, encounterId) {
+        console.log("DEBUG74 Type of NID before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
         const itemBonus = this.inventory.reduce((total, itemId) => {
             const item = items.find(item => item.id === itemId);
             return item && item.bonusType === attribute ? total + item.bonusAmount : total;
@@ -97,38 +98,45 @@ class Character {
             if (choice.failure.effect === "enterCombat") {
                 let npcId = choice.failure.npcid;
                 let nextEncounterId = choice.nextEncounterId;
+                console.log("DEBUG100 Type of NID before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
                 Combat.enterCombat(this, npcId, npcs, startEncounter, this.useItem.bind(this), prompt, nextEncounterId, encounter);
             }
         }
     }
         return success;
     }
+    
     pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter) {
-        console.log("DEBUG107 Character.js PROMPT" ,typeof prompt)
+        console.log("DEBUG110 Type of before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
         console.log("\nIntermission:");
         console.log("1. View character status");
         console.log("2. Use an item");
         console.log("3. Continue");
-        // console.log("DEBUG112 Characters.js", typeof prompt);
+        console.log("DEBUG115 PROMPT Characters.js", typeof nextEncounterId, typeof prompt);
         let choice = prompt("Choose an option: ");
-        console.log("DEBUG114 Character.js ENCOUNTER", typeof encounter);
         switch (choice) {
             case "1":
                 console.clear();
                 console.log(`Character Status:\nName: ${this.name}\nHealth: ${this.health}\nSTR: ${this.str}, AGI: ${this.agi}, INT: ${this.int}\nMoney: ${this.money}\nInventory: ${this.inventory.map(id => items.find(item => item.id === id).name).join(", ") || "No items"}`);
+                console.log("DEBUG121 Type of prompt before calling pauseForIntermission:", typeof nextEncounterId);
                 this.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
                 break;
             case "2":
-                if (this.inventory.length === 0) {
+                const consumables = this.inventory.map(id => items.find(item => item.id === id)).filter(item => item.type === "consumable");
+                if (consumables.length === 0) {
+                    console.log("DEBUG124 Character.js PROMPT", typeof nextEncounterId, typeof prompt)
+
                     console.log("No items to use.");
-                    this.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
+                    console.log("DEBUG129Type of prompt before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
+                    this.pauseForIntermission(items, nextEncounterId, startEncounter(), useItem, prompt, encounter);
                 } else {
-                    useItem(items, this.applyItemEffect.bind(this), this.pauseForIntermission.bind(this), prompt, encounter);
+                    console.log("DEBUG132 Type of prompt before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
+                    useItem(items, this.applyItemEffect.bind(this), this.pauseForIntermission.bind(this), prompt, encounter, nextEncounterId, startEncounter);
                 }
                 break;
            
             case "3":
-            // console.log("DEBUG129 Combat.js", encounter);
+            console.log("DEBUG129 Combat.js", typeof encounterId, typeof prompt);
             nextEncounterId = encounter.getNextEncounterId();
             if (nextEncounterId){
                 startEncounter(nextEncounterId, this);
@@ -139,40 +147,46 @@ class Character {
             break;
             default:
                 console.log("Invalid option. Please try again.");
+                console.log("Type of prompt before calling pauseForIntermission:", typeof nextEncounterId);
                 this.pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
-            console.log("DEBUG142 Character.js", encounter);
+            console.log("DEBUG142 Character.js", typeof encounterId, typeof prompt);
             }
     }
         
-    useItem(items, applyItemEffect, pauseForIntermission, prompt, encounter) {
+    useItem(items, applyItemEffect, pauseForIntermission, prompt, encounter, nextEncounterId, startEncounter) {
+        console.log("DEBUG148 Caracters.js ITEMS", typeof items)
         const consumables = this.inventory.map(id => items.find(item => item.id === id)).filter(item => item.type === "consumable");
     
         if (consumables.length === 0) {
             console.log("You have no consumable items to use.");
-            pauseForIntermission(items, startEncounter, useItem, prompt, encounter);
+            console.log("DEBUG161 Type of prompt before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
+            pauseForIntermission(items, nextEncounterId, startEncounter, this, prompt, encounter);
             return;
         }
-        console.log("DEBUG155 Character.js PROMPT", typeof prompt)
+        console.log("DEBUG155 Character.js PROMPT", typeof nextEncounterId, typeof prompt)
         console.log("Select an item to use:");
         consumables.forEach((item, index) => {
             console.log(`${index + 1}. ${item.name} (${item.effect}, ${item.amount})`);
         });
         console.log(`${consumables.length + 1}. Go back`);
     
-        let choice = parseInt(prompt("Choose an option: "), 10);
+        let choice = prompt(("Choose an option: "), 10); //let choice = parseInt(prompt("Choose an option: "), 10);
         if (choice === consumables.length + 1) {
-            pauseForIntermission(items, startEncounter, useItem, prompt, encounter);
+            console.log("DEBUG72 Type of prompt before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
+            pauseForIntermission(items, nextEncounterId, startEncounter, useItem, prompt, encounter);
             return;
         }
-        console.log("DEBUG167 Character.js ENCOUNTER", typeof encounter);
+        console.log("DEBUG178 Character.js ENCOUNTER", typeof nextEncounterId, typeof prompt);
         const selectedItem = consumables[choice - 1];
         if (selectedItem) {
             this.applyItemEffect(this, selectedItem);
         } else {
             console.log("Invalid choice. Please try again.");
         }
-        console.log("DEBUG174 Character.js ENCOUNTER", typeof encounter)
-        pauseForIntermission(items, null, null, this.useItem.bind(this), encounter, prompt);
+        console.log("DEBUG174 Character.js ENCOUNTER", typeof nextEncounterId, typeof prompt)
+        console.log("DEBUG175 Character.js Prompt", prompt)
+        console.log("DEBUG 186 Type of prompt before calling pauseForIntermission:", typeof nextEncounterId, typeof prompt);
+        pauseForIntermission(items, null, startEncounter, this.useItem.bind(this), prompt, encounter);
     }
 
     handleLoot(npc, items) {
@@ -192,12 +206,12 @@ class Character {
     }
 
     applyItemEffect(character, item) {
-        console.log("DEBUG193 Character.js" , typeof item);
+        console.log("DEBUG208 Character.js" , typeof item);
         switch(item.effect) {
             case "heal":
                 character.health = Math.min(character.health + item.amount, character.maxHealth);
                 console.log(`Used ${item.name}. Healed for ${item.amount} health. Current health: ${character.health}.`);
-                break;
+                
         }
     
         const itemIndex = character.inventory.indexOf(item.id);

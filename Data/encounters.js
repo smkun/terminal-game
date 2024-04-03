@@ -94,6 +94,47 @@ const encounters = [
         ],
         nextEncounterId: 3,
     },
+    {
+        encounterId: 3,
+        title: "Path to Infiltration2",
+        text: "222After defeating the guard, you arrive in the alley near the building you must infiltrate. Do you take the sewers or climb the building?",
+        choices: [
+            {
+                text: "Go through the sewers.",
+                attribute: "int",
+                difficulty: 10,
+                success: {
+                    text: "You navigate the sewers successfully and enter the building unseen.",
+                    immediateEffect: null, 
+                    effect: () => console.log("Entered through the sewers."),
+                },
+                failure: {
+                    text: "You get lost in the sewers and end up back where you started.",
+                    effect: () => console.log("Lost in sewers."),
+                },
+            },
+            {
+                text: "Climb the outside of the building.",
+                attribute: "agi",
+                difficulty: 14,
+                success: {
+                    text: "Your climb is successful, and you find an entry point on an upper level.",
+                    immediateEffect: null, 
+                    effect: () => console.log("Entered through the upper level."),
+                },
+                failure: {
+                    text: "You slip and fall, alerting a nearby guard to your presence.",
+                    npcId: 2,
+                    immediateEffect: (character) => {
+                        console.log("You've hurt yourself in the fall. You take 3 damage.");
+                        character.health -= 3;
+                    },
+                    effect: "enterCombat",
+                },
+            },
+        ],
+        nextEncounterId: 4,
+    },
     // Further encounters...
 ];
 
