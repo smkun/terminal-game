@@ -1,4 +1,4 @@
-# Ghostline
+# Ghostline - Scott and Jordon Terminal Game Lab
 
 Ghostline is a text-based RPG developed in Node.js, offering players an immersive experience through a world filled with adventures, challenges, and the unknown. As a player, you will make choices that determine your path, engage in combat, interact with characters, and uncover the mysteries of Ghostline.
 
